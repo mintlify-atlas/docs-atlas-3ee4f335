@@ -1,5 +1,5 @@
 ---
-title: "Deploy Mi App Números to GitHub Pages"
+title: "Deploy Mi App Números to GitHub Pages with gh-pages"
 sidebarTitle: "Deployment"
 description: "Build Mi App Números for production and publish it to GitHub Pages using the gh-pages package. Includes one-command deploy and manual build steps."
 ---
@@ -44,7 +44,7 @@ Mi App Números is pre-configured to deploy to GitHub Pages via the `gh-pages` p
       ```
     </CodeGroup>
 
-    The `predeploy` hook in `package.json` runs `vite build` first, producing an optimized static bundle in the `dist/` directory. Once the build succeeds, `gh-pages -d dist` pushes the contents of `dist/` to the `gh-pages` branch of your repository. No manual `git` commands are required.
+    The `predeploy` hook in `package.json` runs `npm run build` first, producing an optimized static bundle in the `dist/` directory. Once the build succeeds, `gh-pages -d dist` pushes the contents of `dist/` to the `gh-pages` branch of your repository. No manual `git` commands are required.
 
     ```json title="package.json (scripts)"
     {
