@@ -1,47 +1,93 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with Mi App Números Locally"
+sidebarTitle: "Quickstart"
+description: "Clone Mi App Números, install dependencies, and run the development server locally in three steps. Supports npm, yarn, and pnpm."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+You can have Mi App Números running in your browser in under two minutes. All you need to do is clone the repository, install the dependencies, and fire up the Vite development server — no extra configuration required.
 
 ## Prerequisites
 
-Before you begin, you must have:
+Before you begin, make sure you have the following installed:
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+- **Node.js 18 or higher** — Vite 8 requires at least Node.js 18.
+- **A package manager** — npm (bundled with Node.js), yarn, or pnpm all work.
 
-## Get started
+## Steps
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Clone the repository">
+    Clone the project from GitHub and enter the new directory:
 
     ```bash
-    npm install your-package
+    git clone https://github.com/jonathino2590/mi-app-numeros.git && cd mi-app-numeros
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
 
-    ```bash
-    your-cli init
-    ```
+  <Step title="Install dependencies">
+    Install all required packages. Choose the command that matches your preferred package manager:
+
+    <CodeGroup>
+      ```bash npm
+      npm install
+      ```
+
+      ```bash yarn
+      yarn
+      ```
+
+      ```bash pnpm
+      pnpm install
+      ```
+    </CodeGroup>
+
+    This will pull in React 19, Framer Motion, Lucide React, Tailwind CSS, and all other dependencies listed in `package.json`.
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
 
-    ```bash
-    your-cli start
-    ```
+  <Step title="Start the dev server">
+    Launch the Vite development server with hot-module replacement enabled:
+
+    <CodeGroup>
+      ```bash npm
+      npm run dev
+      ```
+
+      ```bash yarn
+      yarn dev
+      ```
+
+      ```bash pnpm
+      pnpm dev
+      ```
+    </CodeGroup>
+
+    Vite will start on **`http://localhost:5173`** by default. The terminal will print the exact local URL once the server is ready.
+  </Step>
+
+  <Step title="Open the app">
+    Navigate to [http://localhost:5173/mi-app-numeros/](http://localhost:5173/mi-app-numeros/) in your browser.
+
+    You will be greeted by the main menu — **¡Aprendamos los Números!** — where you can choose between *Paso a Paso* (sequential learning) and *Modo Aleatorio* (random mode), or jump straight into Practice or Writing from inside any Learn card.
+
+    <Info>
+      The `base` path is set to `/mi-app-numeros/` in `vite.config.js`, so the local URL includes that sub-path to match the GitHub Pages deployment.
+    </Info>
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Available scripts
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+All scripts are defined in `package.json` and can be run with `npm run <script>`, `yarn <script>`, or `pnpm <script>`:
+
+| Script      | Command                    | Description                                                                                                         |
+| ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `dev`       | `vite`                     | Starts the local development server at `http://localhost:5173` with hot-module replacement.                         |
+| `build`     | `vite build`               | Compiles and bundles the app into the `dist/` directory, ready for production deployment.                           |
+| `lint`      | `eslint .`                 | Runs ESLint across the entire project to catch code-quality issues and enforce React Hooks rules.                   |
+| `preview`   | `vite preview`             | Serves the production build from `dist/` locally so you can verify the output before deploying.                    |
+| `predeploy` | `npm run build`            | Automatically runs `build` before every `deploy` call. You do not need to invoke this script manually.              |
+| `deploy`    | `gh-pages -d dist`         | Publishes the `dist/` folder to the `gh-pages` branch, making the app live on GitHub Pages. Triggers `predeploy` first. |
+
+<Tip>
+  To learn how to configure and publish Mi App Números to GitHub Pages — including setting the correct `homepage` field and `base` path — see the **Deployment** page.
 </Tip>

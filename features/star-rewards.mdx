@@ -1,0 +1,56 @@
+---
+title: "Star Rewards: Track Progress and Motivate Learners"
+sidebarTitle: "Star Rewards"
+description: "Mi App Números awards one star for every correct answer in Practice Mode and every completed Writing Mode trace, displayed in the top navigation bar."
+---
+
+The star reward system is Mi App Números's built-in motivation mechanism. Every time a child successfully completes an activity — whether by identifying the correct count in Practice Mode or finishing a tracing attempt in Writing Mode — they earn one star. The running total is displayed prominently at the top of every screen, giving children a visible record of their progress throughout the session and encouraging them to keep going.
+
+## When Stars Are Awarded
+
+Stars are issued exclusively through the `handleCorrect` function, which increments the counter and triggers the success feedback overlay:
+
+```jsx
+const handleCorrect = () => {
+  setFeedback('correct');
+  setStars(s => s + 1);
+  setTimeout(() => {
+    nextNumber();
+  }, 1500);
+};
+```
+
+There are two actions in the app that call `handleCorrect`:
+
+<Steps>
+  <Step title="Correct answer in Practice Mode">
+    When a child taps the right number button in the multiple-choice quiz, `checkAnswer` detects that the selected value equals `data.val` and calls `handleCorrect()`. One star is awarded and the app advances to the next number after 1 500 ms.
+  </Step>
+  <Step title="Completing a number trace in Writing Mode">
+    When a child taps the **¡Listo!** button after drawing on the canvas, the button's `onClick` handler calls `handleCorrect()` directly. One star is awarded regardless of drawing quality, and the app advances to the next number after 1 500 ms.
+  </Step>
+</Steps>
+
+## The Star Counter
+
+The star count is displayed in the top navigation bar (`<nav>`) that appears at the top of every view — menu, Learn Mode, Practice Mode, and Writing Mode alike. It is rendered inside a yellow rounded pill badge so it is immediately recognisable at a glance:
+
+```jsx
+<div className="flex items-center space-x-2 bg-yellow-100 px-4 py-2 rounded-full border-2 border-yellow-300">
+  <Star className="text-yellow-500 fill-current" size={24} />
+  <span className="font-bold text-yellow-700">{stars}</span>
+</div>
+```
+
+The same total is also shown on the main menu screen in a larger display below the session-type buttons, so children always know their current score when choosing what to do next.
+
+## Feedback Animations
+
+Each call to `handleCorrect` (or a wrong-answer event) sets the `feedback` state, which drives two full-screen overlay animations rendered outside the main view stack. Both overlays use Framer Motion's `AnimatePresence` so they mount and unmount with smooth transitions:
+
+- **Correct (`feedback === 'correct'`)** — a white circular panel with a green border (`border-8 border-green-400`) slides in with a scale animation, shows a large `CheckCircle2` icon in green, and displays the text **¡Genial!** in uppercase. The panel bounces continuously while visible (`animate-bounce`). The overlay disappears automatically after 1 500 ms when `nextNumber()` clears the feedback state.
+- **Wrong (`feedback === 'wrong'`)** — a white circular panel with a red border (`border-8 border-red-400`) enters from a slight horizontal offset (shake entrance), shows a large `XCircle` icon in red, and displays the text **Casi...** in uppercase. No star is awarded. The overlay clears after 1 000 ms, returning the child to the same question to try again.
+
+<Note>
+  The star count lives in React component state (`useState(0)`) and is therefore **session-only**. Refreshing the browser page resets the counter to zero. Mi App Números does not currently use `localStorage`, a database, or any other persistence layer, so stars cannot be saved between visits.
+</Note>

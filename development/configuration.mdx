@@ -1,0 +1,132 @@
+---
+title: "Configure Vite, Tailwind, and ESLint in Mi App Números"
+sidebarTitle: "Configuration"
+description: "Reference for the Vite build config, Tailwind CSS setup, PostCSS pipeline, and ESLint rules used in Mi App Números."
+---
+
+Mi App Números uses three main configuration layers — **Vite** for bundling and the development server, **Tailwind CSS** for utility-class styling, and **ESLint** for code quality. Each layer has its own config file at the project root, and none of them require environment variables or `.env` files.
+
+## Vite Configuration
+
+Vite is the build tool and development server for Mi App Números. The configuration file is minimal: it registers the official React plugin and sets the deployment sub-path via the `base` option.
+
+```jsx title="vite.config.js"
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  base: '/mi-app-numeros/',
+})
+```
+
+`@vitejs/plugin-react` enables two important features:
+
+- **Automatic JSX transform** — JSX is compiled without needing to import React in every file.
+- **Fast Refresh** — Component state is preserved across hot-module replacements during development, so edits to `App.jsx` take effect instantly without a full page reload.
+
+The `base: '/mi-app-numeros/'` option tells Vite to prefix all asset URLs with the repository sub-path. This is required because the app is hosted at `https://jonathino2590.github.io/mi-app-numeros/` rather than at the root of a domain.
+
+## Tailwind CSS
+
+Tailwind CSS v3 is used throughout `App.jsx` for all layout, color, spacing, and animation utilities. The configuration file tells Tailwind which source files to scan for class names.
+
+```js title="tailwind.config.js"
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+The `content` array controls Tailwind's purge step. It scans `index.html` and every JavaScript/TypeScript/JSX/TSX file inside `src/`. Any utility class not found in these files is removed from the production CSS bundle, keeping the stylesheet small.
+
+Tailwind is activated in `src/index.css` via the three standard directives, which are imported by `src/main.jsx` at startup:
+
+```css title="src/index.css"
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+## PostCSS
+
+PostCSS sits between Tailwind and the final CSS output. Its configuration registers two plugins.
+
+```js title="postcss.config.js"
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+```
+
+- **`tailwindcss`** — Runs the Tailwind CSS transformation, generating the utility classes from the scanned source files.
+- **`autoprefixer`** — Automatically adds vendor prefixes (e.g., `-webkit-`, `-moz-`) to CSS properties that require them, improving cross-browser compatibility without manual effort.
+
+Vite picks up `postcss.config.js` automatically; no additional Vite configuration is needed to enable the PostCSS pipeline.
+
+## ESLint
+
+ESLint is configured with the new flat config format (ESLint v9+). The configuration applies to all `.js` and `.jsx` files in the project, excluding the `dist/` output directory.
+
+```js title="eslint.config.js"
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
+        sourceType: 'module',
+      },
+    },
+    rules: {
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    },
+  },
+])
+```
+
+Two React-specific plugins are included:
+
+- **`eslint-plugin-react-hooks`** — Enforces the [Rules of Hooks](https://react.dev/reference/rules/rules-of-hooks): hooks must be called at the top level of a component and never inside loops, conditions, or nested functions.
+- **`eslint-plugin-react-refresh`** — Warns when a file used by Vite's HMR pipeline exports something other than a React component, which would cause Fast Refresh to fall back to a full page reload.
+
+The custom rule `'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }]` suppresses the unused-variable error for identifiers written in `UPPER_CASE` or starting with `_`, which covers constants like `NUMBERS_DATA`.
+
+## Extending the Number Data
+
+Adding a new number to the app requires only a single change — appending an object to the `NUMBERS_DATA` array in `src/App.jsx`:
+
+```jsx title="src/App.jsx"
+// Add to the NUMBERS_DATA array in src/App.jsx
+{ val: 12, word: "Doce", emoji: "🎂", color: "bg-cyan-500" },
+```
+
+No Vite, Tailwind, PostCSS, or ESLint configuration changes are needed. All four views (`LearnView`, `PracticeView`, `WritingView`, and `Menu`) iterate over the array dynamically and will pick up the new entry automatically.
+
+<Note>
+  The app uses no environment variables and requires no `.env` file. All configuration is expressed directly in the config files at the project root.
+</Note>

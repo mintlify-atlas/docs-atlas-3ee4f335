@@ -1,0 +1,64 @@
+{
+  "projectType": "frontend",
+  "projectName": "Mi App Números",
+  "projectDescription": "A Spanish-language interactive React app that teaches children numbers 1–11 through three engaging modes: step-by-step learning, multiple-choice practice, and freehand drawing on a canvas.",
+  "theme": "almond",
+  "primaryColor": "#3b82f6",
+  "lightColor": "#93c5fd",
+  "darkColor": "#1d4ed8",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "App Features",
+            "pages": [
+              "features/learn-mode",
+              "features/practice-mode",
+              "features/writing-mode",
+              "features/star-rewards"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development/project-structure",
+              "development/configuration",
+              "development/deployment"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Step-by-step number learning (1–11) with emoji visual aids and color-coded cards",
+    "Multiple-choice practice mode with randomly generated answer options",
+    "Freehand canvas writing mode with ghost-number guide for tracing",
+    "Random mode for advanced learners that shuffles number order",
+    "Star reward system that tracks correct answers across sessions",
+    "Animated feedback overlays (¡Genial! / Casi...) using Framer Motion",
+    "Fully responsive layout with Tailwind CSS, works on touch devices",
+    "Deployable to GitHub Pages via gh-pages"
+  ],
+  "publicApiSurface": [
+    "NUMBERS_DATA array (val, word, emoji, color per number 1–11)",
+    "App component — root React component managing view state",
+    "Menu view — main navigation with Paso a Paso and Modo Aleatorio buttons",
+    "LearnView — displays current number with emoji grid and navigation buttons",
+    "PracticeView — multiple-choice quiz showing emoji objects to count",
+    "WritingView — canvas-based number tracing with ghost guide",
+    "startLearning(mode) — initialises learning session in 'linear' or 'random' mode",
+    "nextNumber() — advances to next number (linear) or random number",
+    "handleCorrect() — awards a star and advances after 1.5 s delay",
+    "stars state — cumulative correct-answer counter displayed in nav bar"
+  ]
+}

@@ -1,0 +1,58 @@
+---
+title: "Writing Mode: Trace Numbers on a Canvas"
+sidebarTitle: "Writing Mode"
+description: "Writing Mode provides a 350×400 canvas with a ghost-number guide. Children trace the number with a mouse or finger and tap ¡Listo! to earn a star."
+---
+
+Writing Mode is a freehand tracing exercise that lets children practise forming numerals with their finger or mouse. It is reached by tapping the **Escribir** button in Learn Mode. The same number being studied in Learn Mode is shown as a faint ghost behind the canvas, giving children a clear guide to trace over. When they are satisfied with their attempt they tap **¡Listo!** to earn a star and move on to the next number.
+
+## Canvas Setup
+
+The drawing surface is an HTML `<canvas>` element with a fixed size of **350 × 400 pixels**. Two important classes are applied to it:
+
+- `touch-none` — prevents the browser from intercepting touch events for scrolling, ensuring every finger movement is captured as a drawing stroke instead.
+- `cursor-crosshair` — provides a precise cursor on desktop browsers.
+
+Behind the canvas, absolutely positioned and non-interactive, sits the **ghost numeral** — the current number rendered at **250 px** in `font-black text-gray-100`. The very light gray colour makes the digit visible enough to trace without competing with the blue ink the child draws. The ghost is marked `pointer-events-none` and `select-none` so it never interferes with drawing.
+
+## Drawing Implementation
+
+All drawing is performed through the Canvas 2D API. Each stroke is configured with a blue colour, a wide line for easy tracing, and rounded caps so strokes look smooth even at low speeds:
+
+```jsx
+ctx.strokeStyle = '#3b82f6';
+ctx.lineWidth = 15;
+ctx.lineCap = 'round';
+```
+
+Both mouse and touch input are handled so the same component works on desktop browsers, tablets, and smartphones. The canvas listens for five mouse events and three touch events:
+
+| Input type | Start | Move | End |
+|------------|-------|------|-----|
+| Mouse | `onMouseDown` | `onMouseMove` | `onMouseUp`, `onMouseLeave` |
+| Touch | `onTouchStart` | `onTouchMove` | `onTouchEnd` |
+
+All six handlers share the same coordinate-extraction logic, reading `clientX`/`clientY` from mouse events and falling back to `touches[0]` for touch events, then subtracting the canvas's bounding rectangle offset so coordinates are canvas-relative:
+
+```jsx
+const x = (e.clientX || e.touches[0].clientX) - rect.left;
+const y = (e.clientY || e.touches[0].clientY) - rect.top;
+```
+
+`startDrawing` begins a new path at the pointer position and sets the `isDrawing` flag to `true`. While `isDrawing` is `true`, `draw` appends line segments to the path and calls `ctx.stroke()` on each move event. `stopDrawing` clears the flag without erasing the canvas, preserving everything drawn so far.
+
+## Controls
+
+Two buttons appear below the canvas:
+
+**Clear button** — a circular icon button displaying the `RotateCcw` icon from Lucide. Tapping it calls `clearCanvas`, which wipes the entire canvas surface using `ctx.clearRect(0, 0, canvas.width, canvas.height)`. The ghost numeral behind the canvas is unaffected and remains as a guide for a fresh attempt.
+
+**¡Listo! button** — a wide green button with a `CheckCircle2` icon. Tapping it calls `handleCorrect()`, which awards a star, triggers the ¡Genial! feedback overlay, and advances to the next number after 1 500 ms.
+
+<Tip>
+  Writing Mode fully supports touch input, making it ideal for use on tablets and smartphones. Children can use their finger directly on the screen to practise forming each numeral, no stylus required.
+</Tip>
+
+<Note>
+  Tapping **¡Listo!** always awards a star regardless of how the tracing looks. Writing Mode is designed as a low-pressure handwriting practice exercise, not an assessed activity — the goal is to build motor memory through repetition rather than to evaluate accuracy.
+</Note>

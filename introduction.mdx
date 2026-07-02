@@ -1,0 +1,67 @@
+---
+title: "Mi App Números: Interactive Number Learning for Kids"
+sidebarTitle: "Introduction"
+description: "Mi App Números teaches children numbers 1–11 in Spanish using three interactive modes: step-by-step learning, multiple-choice practice, and canvas tracing."
+---
+
+Mi App Números is a Spanish-language single-page application built with React and Vite, designed to help young children discover and practice the numbers 1 through 11 in a playful, colourful environment. The app offers three distinct learning modes — **Learn** (step-by-step or random card flip), **Practice** (multiple-choice counting quiz), and **Write** (freehand canvas tracing) — so that kids can engage with each number in multiple ways. Every correct answer rewards the child with a ⭐ star, shown persistently in the navigation bar to keep motivation high.
+
+## What you can do
+
+<CardGroup cols={2}>
+  <Card title="Learn Mode" icon="graduation-cap" href="/features/learn-mode">
+    Browse all 11 numbers one by one in order or in random sequence. Each card shows the digit, its Spanish word, and a set of animated emoji that visually represent the quantity.
+  </Card>
+  <Card title="Practice Mode" icon="circle-question" href="/features/practice-mode">
+    Count a group of emoji on screen and tap the correct number from three multiple-choice options. A star is awarded for every right answer, and friendly feedback appears for wrong ones.
+  </Card>
+  <Card title="Writing Mode" icon="pen" href="/features/writing-mode">
+    Trace the current number on an HTML5 canvas using mouse or touch input. A ghost digit is shown in the background as a guide. Tap **¡Listo!** when finished to earn a star.
+  </Card>
+  <Card title="Star Rewards" icon="star" href="/features/star-rewards">
+    Stars accumulate across the session and are displayed in both the top navigation bar and the main menu. The counter persists as long as the browser tab remains open.
+  </Card>
+</CardGroup>
+
+## Tech stack
+
+Mi App Números is built entirely with modern, lightweight front-end tooling. The UI layer is **React 19** (`^19.2.0`) with **React DOM 19** (`^19.2.0`), scaffolded and served by **Vite 8** (`^8.0.0-beta.13`) for near-instant hot-module replacement during development. Smooth entry and exit transitions are powered by **Framer Motion** (`^12.34.1`), while interface icons such as the home button, star, and arrow come from **Lucide React** (`^0.574.0`). Utility-first styling is handled entirely by **Tailwind CSS** (`^3.4.19`). When the project is ready to ship, **gh-pages** (`^6.3.0`) publishes the production build to GitHub Pages at `https://jonathino2590.github.io/mi-app-numeros`, with Vite's `base` option set to `/mi-app-numeros/` to match that sub-path.
+
+## Number data
+
+All content for the 11 learning cards lives in a single `NUMBERS_DATA` constant at the top of `src/App.jsx`. Each entry in the array carries four fields:
+
+| Field   | Type   | Description                                           |
+| ------- | ------ | ----------------------------------------------------- |
+| `val`   | number | The numeric value (1–11)                              |
+| `word`  | string | The Spanish word for the number (e.g. `"Uno"`)        |
+| `emoji` | string | A thematic emoji displayed once per unit of `val`     |
+| `color` | string | A Tailwind `bg-*` class used to colour the number card |
+
+The first two entries look like this:
+
+```jsx src/App.jsx
+const NUMBERS_DATA = [
+  { val: 1, word: "Uno",  emoji: "🍎", color: "bg-red-500"  },
+  { val: 2, word: "Dos",  emoji: "🚲", color: "bg-blue-500" },
+  // ... up to val: 11
+];
+```
+
+The full array continues through `Tres` (⭐ yellow), `Cuatro` (🐶 green), `Cinco` (🎈 purple), `Seis` (🍦 pink), `Siete` (🌈 indigo), `Ocho` (🚀 orange), `Nueve` (🐱 teal), `Diez` (⚽ lime), and `Once` (🦆 lime).
+
+## App state
+
+The root `App` component manages exactly five top-level state variables with `useState`:
+
+| Variable       | Initial value | Purpose                                                                                              |
+| -------------- | ------------- | ---------------------------------------------------------------------------------------------------- |
+| `view`         | `'menu'`      | Controls which screen is rendered: `'menu'`, `'learn'`, `'practice'`, or `'write'`.                 |
+| `currentIndex` | `0`           | Index into `NUMBERS_DATA` that determines which number is currently active across all three modes.   |
+| `gameMode`     | `'linear'`    | Dictates navigation order in Learn mode — `'linear'` advances sequentially, `'random'` jumps to a random card. |
+| `feedback`     | `null`        | Triggers the full-screen overlay animation: `'correct'` shows a green ✅ with "¡Genial!", `'wrong'` shows a red ❌ with "Casi…". Resets to `null` after 1.5 s (correct) or 1 s (wrong). |
+| `stars`        | `0`           | Running count of stars earned this session. Incremented by `handleCorrect()` whenever the child answers correctly or completes a tracing exercise. |
+
+<Note>
+  Ready to run the app on your machine? Head over to the [Quickstart](/quickstart) page for step-by-step instructions to clone the repository, install dependencies, and launch the development server in under two minutes.
+</Note>

@@ -1,0 +1,82 @@
+---
+title: "Learn Mode: Explore Numbers 1–11 Step by Step"
+sidebarTitle: "Learn Mode"
+description: "Learn Mode shows each number as a large numeral, its Spanish name, and an animated emoji grid so children connect quantity to symbol before practising."
+---
+
+Learn Mode is the core exploration screen of Mi App Números. When a child starts a session from the main menu, they are taken into Learn Mode where each number is presented as a large, bold numeral paired with its Spanish name and a lively grid of animated emoji objects — one emoji for every unit of the number. This screen is designed to build a concrete understanding of quantity before any quiz or tracing exercise begins.
+
+## Session Types
+
+From the main menu, learners can choose between two session styles that control how Learn Mode advances through the numbers:
+
+- **Paso a Paso** — walks through the numbers in strict order from 1 to 11. When the last number is reached and the learner taps _Siguiente_, the app returns to the main menu.
+- **Modo Aleatorio** — picks the next number at random from the full dataset of 11 entries. This keeps more advanced learners on their toes and prevents memorisation by position.
+
+Both options call the same `startLearning` function, passing the chosen mode as an argument:
+
+```jsx
+const startLearning = (mode) => {
+  setGameMode(mode);   // 'linear' or 'random'
+  setCurrentIndex(0);
+  setView('learn');
+};
+```
+
+## What the Screen Shows
+
+Every Learn Mode card contains three visual layers stacked vertically:
+
+1. **The numeral** — rendered at `text-9xl font-black` in dark gray, making the digit large enough for small children to read at a glance.
+2. **The Spanish word** — rendered at `text-4xl font-bold` in blue, displayed in uppercase with wide letter spacing (`tracking-widest`) to improve legibility.
+3. **The animated emoji grid** — a row of emoji objects, one per unit, that pop onto the screen with a Framer Motion spring animation. Each emoji animates in individually with a staggered delay of `i * 0.1` seconds, giving the grid a playful cascading entrance:
+
+```jsx
+{Array.from({ length: data.val }).map((_, i) => (
+  <motion.div
+    key={i}
+    initial={{ scale: 0 }}
+    animate={{ scale: 1 }}
+    transition={{ delay: i * 0.1, type: 'spring' }}
+    className="text-6xl"
+  >
+    {data.emoji}
+  </motion.div>
+))}
+```
+
+The combination of a large numeral, its spoken name, and a countable set of objects gives children three simultaneous representations of the same quantity.
+
+## Navigation Buttons
+
+Three action buttons sit at the bottom of the Learn Mode screen, giving children immediate paths forward:
+
+| Button | Destination | Purpose |
+|---|---|---|
+| **Escribir** (PenTool icon) | Writing Mode | Trace the numeral on the canvas |
+| **Practicar** (Hash icon) | Practice Mode | Take a multiple-choice counting quiz |
+| **Siguiente** (ArrowRight icon) | Next number | Advance without completing an activity |
+
+Tapping **Siguiente** calls `nextNumber()`, which either picks a random index (Modo Aleatorio) or increments `currentIndex` by one (Paso a Paso). Tapping **Escribir** or **Practicar** simply sets the `view` state to `'write'` or `'practice'` respectively, keeping the same `currentIndex` so both sub-modes operate on the number currently being studied.
+
+## Number Data Reference
+
+The full dataset used by Learn Mode is defined in `NUMBERS_DATA`. Each entry carries a numeric value, Spanish word, representative emoji, and a Tailwind color class used for UI accents.
+
+| Number | Spanish Word | Emoji |
+|--------|-------------|-------|
+| 1 | Uno | 🍎 |
+| 2 | Dos | 🚲 |
+| 3 | Tres | ⭐ |
+| 4 | Cuatro | 🐶 |
+| 5 | Cinco | 🎈 |
+| 6 | Seis | 🍦 |
+| 7 | Siete | 🌈 |
+| 8 | Ocho | 🚀 |
+| 9 | Nueve | 🐱 |
+| 10 | Diez | ⚽ |
+| 11 | Once | 🦆 |
+
+<Tip>
+  Start every new learner with **Paso a Paso** so they build familiarity with all 11 numbers in sequence. Once they can recognise each number confidently, switch to **Modo Aleatorio** to reinforce recall without relying on the predictable 1-to-11 order.
+</Tip>

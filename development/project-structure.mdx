@@ -1,0 +1,126 @@
+---
+title: "Mi App Números Project Structure and Architecture"
+sidebarTitle: "Project Structure"
+description: "Overview of Mi App Números file layout, component architecture, and how views, state, and data are organized inside the single App.jsx component."
+---
+
+Mi App Números is a single-page React application with a flat component architecture — all views are defined as functions inside `App.jsx` and rendered conditionally based on the `view` state variable. There are no separate route files or page-level components; the entire application lives within a single component tree, making it easy to trace data flow from top-level state down to each view.
+
+## Directory Layout
+
+```text
+mi-app-numeros/
+├── index.html
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+├── postcss.config.js
+├── eslint.config.js
+├── public/
+│   └── vite.svg
+└── src/
+    ├── main.jsx
+    ├── App.jsx
+    ├── App.css
+    ├── index.css
+    └── assets/
+        └── react.svg
+```
+
+## Entry Point
+
+The application boots through a three-file chain:
+
+1. **`index.html`** — The HTML shell served by Vite. It contains a single `<div id="root"></div>` and a `<script type="module" src="/src/main.jsx">` tag that kicks off the JavaScript bundle.
+2. **`src/main.jsx`** — Imports `App` and mounts it into the `#root` div using React 19's `createRoot` API, wrapped in `<StrictMode>` for development warnings. It also imports `index.css`, which contains the three Tailwind CSS directives.
+3. **`src/App.jsx`** — The root component that owns all application state, data, navigation logic, and nested view components.
+
+```jsx title="src/main.jsx"
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+```
+
+## App.jsx Architecture
+
+The `App` component is the sole top-level component in the application. It is responsible for four concerns:
+
+**Static data — `NUMBERS_DATA`**
+
+A constant array of 11 objects defined at the module level (outside the component). Each entry describes one number with four properties: `val` (integer), `word` (Spanish name), `emoji` (visual representation), and `color` (Tailwind background class). All views loop over this array to render their content.
+
+```jsx title="src/App.jsx (data)"
+const NUMBERS_DATA = [
+  { val: 1,  word: "Uno",    emoji: "🍎", color: "bg-red-500"    },
+  { val: 2,  word: "Dos",    emoji: "🚲", color: "bg-blue-500"   },
+  { val: 3,  word: "Tres",   emoji: "⭐", color: "bg-yellow-500" },
+  // ... up to val: 11
+];
+```
+
+**Top-level state**
+
+| State variable   | Type             | Purpose                                          |
+|------------------|------------------|--------------------------------------------------|
+| `view`           | `string`         | Controls which view is rendered (`'menu'`, `'learn'`, `'practice'`, `'write'`) |
+| `currentIndex`   | `number`         | Index into `NUMBERS_DATA` for the active number  |
+| `gameMode`       | `string`         | `'linear'` (sequential) or `'random'` (shuffled) |
+| `feedback`       | `string \| null` | `'correct'`, `'wrong'`, or `null` (no overlay)   |
+| `stars`          | `number`         | Cumulative correct-answer count shown in the nav |
+
+**Navigation functions**
+
+- `startLearning(mode)` — Sets `gameMode`, resets `currentIndex` to `0`, and switches `view` to `'learn'`.
+- `nextNumber()` — Advances `currentIndex` (or picks a random one in random mode) and clears `feedback`. Returns to `'menu'` when the last number in linear mode is reached.
+- `handleCorrect()` — Sets `feedback` to `'correct'`, increments `stars`, then calls `nextNumber()` after a 1.5-second delay.
+
+**Nested view components**
+
+All four view components are function declarations inside the body of `App`, giving them closure access to state and navigation functions without prop drilling:
+
+| Component       | Purpose                                                        |
+|-----------------|----------------------------------------------------------------|
+| `Menu`          | Landing screen with "Paso a Paso" and "Modo Aleatorio" buttons and the star counter |
+| `LearnView`     | Displays the current number, its Spanish name, and an animated emoji grid; links to `PracticeView` and `WritingView` |
+| `PracticeView`  | Multiple-choice quiz — shows emojis and asks the user to pick the correct digit from three randomized options |
+| `WritingView`   | Free-draw canvas with a ghost number guide; uses `useRef` and the Canvas 2D API for touch and mouse input |
+
+**Top-level layout elements**
+
+In addition to the views, `App` renders two persistent UI elements:
+
+- A `<nav>` bar fixed at the top with a Home button (returns to `'menu'`) and the live star counter.
+- A feedback `<AnimatePresence>` block that overlays a full-screen ✅ or ❌ animation whenever `feedback` is non-null.
+
+## View Switching
+
+The `view` state variable is the single source of truth for which screen the user sees. The main `<AnimatePresence mode="wait">` block renders only the matching view component at any time, and Framer Motion handles the enter/exit animations between transitions:
+
+```
+view = 'menu'     →  <Menu />
+view = 'learn'    →  <LearnView />
+view = 'practice' →  <PracticeView />
+view = 'write'    →  <WritingView />
+```
+
+```jsx title="src/App.jsx (view switcher)"
+<AnimatePresence mode="wait">
+  {view === 'menu'     && <Menu key="menu" />}
+  {view === 'learn'    && <LearnView key="learn" />}
+  {view === 'practice' && <PracticeView key="practice" />}
+  {view === 'write'    && <WritingView key="write" />}
+</AnimatePresence>
+```
+
+Each component receives a stable `key` so that `AnimatePresence` can detect when the active child changes and run the correct exit animation before mounting the next view.
+
+<Tip>
+  To extend the app with new numbers, developers only need to add entries to the `NUMBERS_DATA` array in `src/App.jsx`. All four views — `LearnView`, `PracticeView`, `WritingView`, and `Menu` — loop over the array dynamically, so no other code changes are required.
+</Tip>

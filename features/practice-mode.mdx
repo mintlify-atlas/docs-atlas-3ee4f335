@@ -1,0 +1,56 @@
+---
+title: "Practice Mode: Multiple-Choice Counting Quiz"
+sidebarTitle: "Practice Mode"
+description: "Practice Mode displays a grid of emoji objects and three number buttons. Children count the objects and tap the correct answer to earn a star."
+---
+
+Practice Mode is a counting quiz that challenges children to identify how many emoji objects are shown on screen. It is reached by tapping the **Practicar** button inside Learn Mode. The same number currently being studied in Learn Mode is used for the quiz, so there is always a direct link between exploring a number and being tested on it. A correct answer earns a star and advances to the next number, while a wrong answer gives gentle feedback before letting the child try again.
+
+## How Answers Are Generated
+
+Each time a new number is loaded, Practice Mode builds a set of three answer choices. The correct value (`data.val`) is always included; two additional unique random integers from 1–10 are then selected and the full set is shuffled so the correct answer never appears in a predictable position:
+
+```jsx
+useEffect(() => {
+  let opts = [data.val];
+  while (opts.length < 3) {
+    const rand = Math.floor(Math.random() * 10) + 1;
+    if (!opts.includes(rand)) opts.push(rand);
+  }
+  setOptions(opts.sort(() => Math.random() - 0.5));
+}, [currentIndex]);
+```
+
+The `useEffect` depends on `currentIndex`, so a fresh set of distractors is generated automatically whenever the active number changes.
+
+## Answer Feedback
+
+When a child taps one of the three buttons, `checkAnswer` compares the tapped value against `data.val`:
+
+- **Correct answer** — `handleCorrect()` is called. This increments the star counter (`setStars(s => s + 1)`), sets `feedback` to `'correct'`, and displays the animated ¡Genial! overlay. After 1 500 ms the app automatically advances to the next number via `nextNumber()`.
+- **Wrong answer** — `feedback` is set to `'wrong'`, showing the XCircle "Casi..." overlay for 1 000 ms before being cleared back to `null`. The emoji grid and answer buttons remain visible so the child can try again.
+
+The `checkAnswer` function in full:
+
+```jsx
+const checkAnswer = (val) => {
+  if (val === data.val) {
+    handleCorrect();
+  } else {
+    setFeedback('wrong');
+    setTimeout(() => setFeedback(null), 1000);
+  }
+};
+```
+
+## Visual Layout
+
+The Practice Mode screen is arranged in two main sections:
+
+**Emoji container** — a white, semi-transparent panel with a dashed blue border (`border-4 border-dashed border-blue-200`) and rounded corners. The emojis for the current number are rendered at `text-7xl` inside this panel, giving children a clear and well-spaced set of objects to count.
+
+**Answer buttons** — a three-column grid of square buttons, each 96 × 96 px (`w-24 h-24`), styled with a bold blue border (`border-4 border-blue-400`) and rounded corners. The digit inside each button is displayed at `text-4xl font-black` in blue. Buttons animate to 110 % scale on hover and 90 % on tap using Framer Motion's `whileHover` and `whileTap` props, providing satisfying tactile feedback on both mouse and touch devices.
+
+<Note>
+  A new set of distractor options is generated every time `currentIndex` changes. This means that if the same number is encountered again in **Modo Aleatorio**, the wrong-answer choices will likely be different — keeping the quiz feeling fresh even on repeated plays.
+</Note>

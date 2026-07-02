@@ -1,0 +1,119 @@
+---
+title: "Deploy Mi App Números to GitHub Pages"
+sidebarTitle: "Deployment"
+description: "Build Mi App Números for production and publish it to GitHub Pages using the gh-pages package. Includes one-command deploy and manual build steps."
+---
+
+Mi App Números is pre-configured to deploy to GitHub Pages via the `gh-pages` package. The `homepage` field in `package.json` points to `https://jonathino2590.github.io/mi-app-numeros`, and the matching `base: '/mi-app-numeros/'` option in `vite.config.js` ensures all asset URLs resolve correctly under that sub-path. A single command builds the app and publishes it.
+
+## Prerequisites
+
+- A GitHub repository named `mi-app-numeros` under your account.
+- Node.js 18 or newer installed locally.
+- All dependencies installed — the `gh-pages` package is already listed as a devDependency and is installed automatically when you run `npm install`.
+
+## Deploy to GitHub Pages
+
+<Steps>
+  <Step title="Set the homepage">
+    Verify that the `homepage` field in `package.json` matches `https://<username>.github.io/<repo-name>`. For the default repository this is already set correctly:
+
+    ```json title="package.json"
+    {
+      "homepage": "https://jonathino2590.github.io/mi-app-numeros"
+    }
+    ```
+
+    If you fork the repository under a different username or rename the repo, update this value before deploying.
+  </Step>
+
+  <Step title="Run the deploy command">
+    From the project root, run the deploy script:
+
+    <CodeGroup>
+      ```bash npm
+      npm run deploy
+      ```
+
+      ```bash yarn
+      yarn deploy
+      ```
+
+      ```bash pnpm
+      pnpm deploy
+      ```
+    </CodeGroup>
+
+    The `predeploy` hook in `package.json` runs `vite build` first, producing an optimized static bundle in the `dist/` directory. Once the build succeeds, `gh-pages -d dist` pushes the contents of `dist/` to the `gh-pages` branch of your repository. No manual `git` commands are required.
+
+    ```json title="package.json (scripts)"
+    {
+      "scripts": {
+        "predeploy": "npm run build",
+        "deploy":    "gh-pages -d dist"
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Enable GitHub Pages">
+    After the first deploy, configure GitHub Pages to serve from the `gh-pages` branch:
+
+    1. Open your repository on GitHub.
+    2. Go to **Settings** → **Pages**.
+    3. Under **Source**, choose **Deploy from a branch**.
+    4. Select the **`gh-pages`** branch and the **`/ (root)`** folder.
+    5. Click **Save**.
+
+    GitHub will display the published URL at the top of the Pages settings page once the deployment finishes (usually within a minute).
+  </Step>
+
+  <Step title="Visit the live site">
+    Navigate to your live app:
+
+    ```
+    https://<username>.github.io/<repo-name>
+    ```
+
+    For the default repository this is:
+
+    ```
+    https://jonathino2590.github.io/mi-app-numeros
+    ```
+  </Step>
+</Steps>
+
+## Manual Build
+
+To create a production build without publishing it, run:
+
+```bash
+npm run build
+```
+
+Vite compiles, tree-shakes, and minifies the application into the `dist/` directory. You can inspect or test the output locally using the preview server:
+
+```bash
+npm run preview
+```
+
+`vite preview` serves the contents of `dist/` on a local port (default `http://localhost:4173`) so you can verify the production build before deploying.
+
+## Hosting on Other Platforms
+
+<Tip>
+  The `dist/` output is a fully static site — just HTML, CSS, and JavaScript files with no server-side runtime required. You can host it on **Netlify**, **Vercel**, **Cloudflare Pages**, or any static file server by uploading or pointing the platform at the `dist/` directory. Most platforms auto-detect Vite projects and configure the build command (`vite build`) and output directory (`dist`) automatically.
+</Tip>
+
+<Warning>
+  If the app is deployed to a sub-path rather than the root of a domain (for example `https://example.com/mi-app-numeros/`), the `base` option in `vite.config.js` **must** be set to match that sub-path. The repository already includes this setting for GitHub Pages:
+
+  ```js title="vite.config.js"
+  export default defineConfig({
+    plugins: [react()],
+    base: '/mi-app-numeros/',
+  })
+  ```
+
+  If you deploy to a root domain (e.g., `https://mi-app-numeros.netlify.app/`), change `base` to `'/'` or remove the option entirely. Failing to match the `base` value to the actual deployment path will cause blank screens and broken asset references.
+</Warning>
